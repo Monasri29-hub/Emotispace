@@ -8,11 +8,11 @@ This contains everything you need to run your app locally.
 
 View your app in AI Studio: https://ai.studio/apps/drive/16T6i_RDsWToDlpEwpdErDDY3aLCRPNlU
 
-🌌 EmotiSpace – AI-Powered Emotional Room Recommender
+# 🌌 EmotiSpace – AI-Powered Emotional Room Recommender
 
 EmotiSpace is an AI-driven project that designs personalized room layouts based on a user’s emotions, personality, and needs. It combines emotion analysis, design logic, and AI-generated visuals to create spaces that don’t just look good – they feel right.
 
-✨ Features
+# ✨ Features
 
 Insight Report – A short professional analysis of the user’s mood, personality, and space needs.
 
@@ -24,7 +24,7 @@ Adaptive Recommendations – Suggestions for layout, colors, and furniture to bo
 
 Interactive UI (Planned) – Users can input their mood/preferences and instantly receive personalized room designs.
 
-🚀 Tech Stack
+#🚀 Tech Stack
 
 Frontend: React + TailwindCSS (clean, minimal UI)
 
@@ -36,7 +36,7 @@ Database: MongoDB / Firebase (for storing user preferences & reports)
 
 Visualization: AI-generated renders (non-360° for now, 3D/AR integration planned)
 
-🛠️ How It Works
+# 🛠️ How It Works
 
 User inputs emotion & preferences (e.g., calm, energetic, creative).
 
@@ -48,7 +48,7 @@ AI generates a visual render (image) of the recommended room layout.
 
 User receives a personalized design package combining all three outputs.
 
-📂 Project Structure
+# 📂 Project Structure
 EmotiSpace/
 │── frontend/        # React UI  
 │── backend/         # Node.js + Express server  
@@ -56,7 +56,7 @@ EmotiSpace/
 │── assets/          # Generated images & design samples  
 │── README.md        # Project documentation  
 
-🧑‍💻 Setup Instructions
+# 🧑‍💻 Setup Instructions
 
 Clone the repo:
 
@@ -87,7 +87,7 @@ npm run dev
 
 Open http://localhost:3000 to explore.
 
-📖 Example Output
+# 📖 Example Output
 
 Insight Report:
 
@@ -100,7 +100,7 @@ Soft golden light reflects on warm wooden textures, creating a space where still
 Visual Render (AI-generated):
 (Sample room image would go here)
 
-🎯 Future Roadmap
+# 🎯 Future Roadmap
 
  Add interactive drag-and-drop design editor
 
@@ -110,15 +110,11 @@ Visual Render (AI-generated):
 
  Mobile app version
 
-🤝 Contributing
+# 🤝 Contributing
 
 We welcome contributions! Feel free to fork the repo, submit issues, and open PRs.
 
-📜 License
-
-MIT License – Free to use and modify.
-
-🌟 Acknowledgments
+# 🌟 Acknowledgments
 
 Google AI Studio (Gemini API)
 
