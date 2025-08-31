@@ -1,0 +1,5 @@
+{
+  "name": "EmotiSpace",
+  "description": "An AI assistant that recommends simple room layouts, color palettes, and furniture ideas based on your personality traits and emotional needs.",
+  "requestFramePermissions": []
+}
