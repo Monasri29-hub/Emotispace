@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import { Personality, Mood, Room, DesignReport } from './types';
 import { getDesignIdeas, generateImage } from './services/geminiService';
@@ -13,6 +14,13 @@ interface AppResult {
     report: DesignReport;
     imageUrl: string;
 }
+
+const moodColors: Record<Mood, { shape1: string; shape2: string; shape3: string }> = {
+    Calm: { shape1: '#6dd5ed', shape2: '#2193b0', shape3: '#f0f9ff' },
+    Energetic: { shape1: '#ff9a9e', shape2: '#fecfef', shape3: '#ffdde1' },
+    Focused: { shape1: '#ccdbfd', shape2: '#a1c4fd', shape3: '#e2ebf0' },
+    Creative: { shape1: '#c3aed6', shape2: '#a8edea', shape3: '#fed6e3' },
+};
 
 const App: React.FC = () => {
   const [personality, setPersonality] = useState<Personality>('Introvert');
@@ -33,7 +41,7 @@ const App: React.FC = () => {
       setLoadingMessage('Analyzing your style...');
       const designReport = await getDesignIdeas(personality, mood, room);
       
-      setLoadingMessage('Rendering visualization...');
+      setLoadingMessage('Rendering your visualization...');
       const imageUrl = await generateImage(designReport.visual_prompt);
 
       setResult({ report: designReport, imageUrl });
@@ -50,9 +58,84 @@ const App: React.FC = () => {
     }
   }, [personality, mood, room]);
 
+  const currentColors = moodColors[mood];
+
   return (
-    <div className="min-h-screen w-full flex flex-col items-center p-4 sm:p-6 md:p-8 bg-gradient-to-br from-sky-50 to-slate-100">
+    <div 
+        className="min-h-screen w-full flex flex-col items-center p-4 sm:p-6 md:p-8 relative overflow-hidden"
+        style={{
+            '--shape-1-color': currentColors.shape1,
+            '--shape-2-color': currentColors.shape2,
+            '--shape-3-color': currentColors.shape3,
+        } as React.CSSProperties}
+    >
+      <div aria-hidden="true" className="background-visuals">
+          <div className="shape shape-1"></div>
+          <div className="shape shape-2"></div>
+          <div className="shape shape-3"></div>
+      </div>
       <style>{`
+        .background-visuals {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          z-index: 0;
+          pointer-events: none;
+        }
+
+        .shape {
+          position: absolute;
+          border-radius: 9999px;
+          opacity: 0.3;
+          filter: blur(120px);
+          transition: background-color 1.5s ease-in-out;
+        }
+
+        .shape-1 {
+          width: 45rem;
+          height: 45rem;
+          top: -10rem;
+          left: -20rem;
+          background-color: var(--shape-1-color);
+          animation: animate-shape-1 25s infinite alternate ease-in-out;
+        }
+
+        .shape-2 {
+          width: 40rem;
+          height: 40rem;
+          bottom: -5rem;
+          right: -15rem;
+          background-color: var(--shape-2-color);
+          animation: animate-shape-2 30s infinite alternate ease-in-out;
+        }
+        
+        .shape-3 {
+          width: 30rem;
+          height: 30rem;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background-color: var(--shape-3-color);
+          animation: animate-shape-3 20s infinite alternate ease-in-out;
+        }
+        
+        @keyframes animate-shape-1 {
+          from { transform: translate(0, 0) rotate(0deg) scale(1); }
+          to { transform: translate(10rem, 5rem) rotate(45deg) scale(1.1); }
+        }
+
+        @keyframes animate-shape-2 {
+          from { transform: translate(0, 0) rotate(0deg) scale(1); }
+          to { transform: translate(-10rem, -5rem) rotate(-30deg) scale(1.2); }
+        }
+
+        @keyframes animate-shape-3 {
+            from { transform: translate(-50%, -50%) scale(1); }
+            to { transform: translate(-40%, -60%) scale(1.3); }
+        }
+      
         @keyframes fade-in-up {
           0% { opacity: 0; transform: translateY(20px); }
           100% { opacity: 1; transform: translateY(0); }
@@ -62,7 +145,7 @@ const App: React.FC = () => {
         }
       `}</style>
 
-      <header className="text-center mb-8 animate-fade-in-up">
+      <header className="text-center mb-8 animate-fade-in-up relative z-10">
         <div className="flex items-center justify-center gap-2">
             <SparklesIcon className="w-8 h-8 text-sky-500"/>
             <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-800 tracking-tight">EmotiSpace</h1>
@@ -72,7 +155,7 @@ const App: React.FC = () => {
         </p>
       </header>
 
-      <main className="w-full max-w-4xl mx-auto">
+      <main className="w-full max-w-4xl mx-auto relative z-10">
         <form onSubmit={handleSubmit} className="bg-white/80 backdrop-blur-sm p-6 md:p-8 rounded-xl shadow-md border border-slate-200 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <Selector id="personality" label="Your Personality" value={personality} options={personalityOptions} onChange={(value) => setPersonality(value)} />

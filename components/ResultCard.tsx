@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { DesignReport } from '../types';
 import DescriptionIcon from './icons/DescriptionIcon';
@@ -19,14 +20,15 @@ const getEffortClass = (effort: 'Low' | 'Medium' | 'High') => {
 };
 
 const ResultCard: React.FC<ResultCardProps> = ({ suggestion, imageUrl }) => {
+
   return (
-    <div className="bg-white rounded-xl shadow-lg w-full animate-fade-in-up overflow-hidden border border-slate-200">
+    <div className="bg-white/70 backdrop-blur-md rounded-xl shadow-lg w-full animate-fade-in-up overflow-hidden border border-slate-200">
       
-      <div className="p-4 bg-slate-50">
+      <div className="p-4 bg-slate-50/50">
         <img 
-          src={imageUrl} 
-          alt="AI-generated room design" 
-          className="rounded-lg shadow-md object-cover w-full h-auto max-h-[480px]"
+            src={imageUrl} 
+            alt="AI generated room design" 
+            className="w-full h-auto max-h-[480px] object-cover rounded-lg shadow-md"
         />
       </div>
 

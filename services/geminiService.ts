@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { Personality, Mood, Room, DesignReport } from '../types';
 
@@ -20,7 +21,7 @@ const designSchema = {
                 analysis: {
                     type: Type.ARRAY,
                     items: { type: Type.STRING },
-                    description: "4-6 bullet points analyzing the user's needs and the design goals."
+                    description: "3-4 personalized design strategies."
                 }
             },
             required: ["headline", "analysis"]
@@ -65,11 +66,11 @@ Produce a JSON object with the exact keys described in the schema.
 
 1.  **insight_report**: A professional, executive-style report.
     -   **headline**: A compelling title summarizing the design strategy.
-    -   **analysis**: 4-6 bullet points interpreting the user's needs and defining the core design goals.
+    -   **analysis**: 3-4 bullet points, where each point is a personalized design strategy that reflects their personality and addresses their emotional goals.
 
 2.  **emotional_story**: This is the **user-friendly summary**. Write a short, vivid, and sensory paragraph describing the room's atmosphere, textures, light, and emotional effect. Immerse the user in the feeling of the space.
 
-3.  **visual_prompt**: This is the **detailed image prompt** for an AI image generator. Create a single, cinematic, and technically rich paragraph for a photorealistic 3D render. Specify materials (e.g., "matte oak," "boucle fabric"), lighting (e.g., "soft morning light from a large window"), key furniture, decor, color palette, and camera angle for an accurate visualization.
+3.  **visual_prompt**: This is the **detailed image prompt** for an AI image generator. Create a single, cinematic, and technically rich paragraph for a photorealistic, high-resolution interior design photograph (16:9 aspect ratio). Specify materials (e.g., "matte oak," "boucle fabric"), lighting (e.g., "soft morning light from a large window"), key furniture, decor, color palette, and camera angle for an accurate visualization.
 
 4.  **implementation_steps**: A practical checklist of 3-6 actionable steps. For each step, include the task, an effort level ('Low', 'Medium', 'High'), and an estimated time in days.
     `;
