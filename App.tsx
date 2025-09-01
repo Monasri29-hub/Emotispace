@@ -6,9 +6,9 @@ import Selector from './components/Selector';
 import ResultCard from './components/ResultCard';
 import SparklesIcon from './components/icons/SparklesIcon';
 
-const personalityOptions: Personality[] = ['Introvert', 'Extrovert', 'Balanced'];
+const personalityOptions: Personality[] = ['Introvert', 'Extrovert', 'Balanced', 'Ambivert'];
 const moodOptions: Mood[] = ['Calm', 'Energetic', 'Focused', 'Creative'];
-const roomOptions: Room[] = ['Bedroom', 'Study Room', 'Living Room'];
+const roomOptions: Room[] = ['Bedroom', 'Study Room', 'Living Room', 'Kitchen', 'Dining Room', 'Bathroom', 'Balcony'];
 
 interface AppResult {
     report: DesignReport;

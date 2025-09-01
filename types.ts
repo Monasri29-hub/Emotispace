@@ -1,6 +1,6 @@
-export type Personality = 'Introvert' | 'Extrovert' | 'Balanced';
+export type Personality = 'Introvert' | 'Extrovert' | 'Balanced' | 'Ambivert';
 export type Mood = 'Calm' | 'Energetic' | 'Focused' | 'Creative';
-export type Room = 'Bedroom' | 'Study Room' | 'Living Room';
+export type Room = 'Bedroom' | 'Study Room' | 'Living Room' | 'Kitchen' | 'Dining Room' | 'Bathroom' | 'Balcony';
 
 export interface InsightReport {
   headline: string;
