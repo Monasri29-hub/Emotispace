@@ -4,6 +4,8 @@ import { DesignReport } from '../types';
 import DescriptionIcon from './icons/DescriptionIcon';
 import InsightIcon from './icons/InsightIcon';
 import ChecklistIcon from './icons/ChecklistIcon';
+import DownloadIcon from './icons/DownloadIcon';
+import DollarSignIcon from './icons/DollarSignIcon';
 
 interface ResultCardProps {
   suggestion: DesignReport;
@@ -30,6 +32,17 @@ const ResultCard: React.FC<ResultCardProps> = ({ suggestion, imageUrl }) => {
             alt="AI generated room design" 
             className="w-full h-auto max-h-[480px] object-cover rounded-lg shadow-md"
         />
+        <div className="mt-4 flex justify-end">
+          <a
+            href={imageUrl}
+            download="emotispace-design.png"
+            className="inline-flex items-center gap-2 bg-sky-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 transition-all duration-200"
+            aria-label="Download generated image"
+          >
+            <DownloadIcon className="w-5 h-5" />
+            Download Image
+          </a>
+        </div>
       </div>
 
       <div className="p-6 md:p-8">
@@ -51,6 +64,19 @@ const ResultCard: React.FC<ResultCardProps> = ({ suggestion, imageUrl }) => {
                         <li key={index}>{item}</li>
                     ))}
                 </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Estimated Budget */}
+          <div className="p-5 bg-amber-50/50 border border-amber-200 rounded-lg">
+            <div className="flex items-start space-x-4">
+              <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-amber-100 text-amber-600 rounded-full">
+                <DollarSignIcon className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-slate-800">Estimated Budget</h3>
+                <p className="text-slate-600 mt-2 text-lg font-semibold">{suggestion.estimated_budget}</p>
               </div>
             </div>
           </div>

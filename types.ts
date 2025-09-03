@@ -1,6 +1,8 @@
 export type Personality = 'Introvert' | 'Extrovert' | 'Balanced' | 'Ambivert';
 export type Mood = 'Calm' | 'Energetic' | 'Focused' | 'Creative';
 export type Room = 'Bedroom' | 'Study Room' | 'Living Room' | 'Kitchen' | 'Dining Room' | 'Bathroom' | 'Balcony';
+export type Style = 'Modern' | 'Indian' | 'Western';
+export type Budget = 'Economical' | 'Mid-Range' | 'Premium' | 'Luxury';
 
 export interface InsightReport {
   headline: string;
@@ -18,4 +20,5 @@ export interface DesignReport {
   emotional_story: string;
   implementation_steps: ImplementationStep[];
   visual_prompt: string;
+  estimated_budget: string;
 }

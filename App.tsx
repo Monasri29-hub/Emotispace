@@ -1,6 +1,6 @@
 
 import React, { useState, useCallback } from 'react';
-import { Personality, Mood, Room, DesignReport } from './types';
+import { Personality, Mood, Room, DesignReport, Style, Budget } from './types';
 import { getDesignIdeas, generateImage } from './services/geminiService';
 import Selector from './components/Selector';
 import ResultCard from './components/ResultCard';
@@ -9,6 +9,8 @@ import SparklesIcon from './components/icons/SparklesIcon';
 const personalityOptions: Personality[] = ['Introvert', 'Extrovert', 'Balanced', 'Ambivert'];
 const moodOptions: Mood[] = ['Calm', 'Energetic', 'Focused', 'Creative'];
 const roomOptions: Room[] = ['Bedroom', 'Study Room', 'Living Room', 'Kitchen', 'Dining Room', 'Bathroom', 'Balcony'];
+const styleOptions: Style[] = ['Modern', 'Indian', 'Western'];
+const budgetOptions: Budget[] = ['Economical', 'Mid-Range', 'Premium', 'Luxury'];
 
 interface AppResult {
     report: DesignReport;
@@ -26,6 +28,9 @@ const App: React.FC = () => {
   const [personality, setPersonality] = useState<Personality>('Introvert');
   const [mood, setMood] = useState<Mood>('Calm');
   const [room, setRoom] = useState<Room>('Bedroom');
+  const [style, setStyle] = useState<Style>('Modern');
+  const [budget, setBudget] = useState<Budget>('Mid-Range');
+  const [architecturalFeatures, setArchitecturalFeatures] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [loadingMessage, setLoadingMessage] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +44,7 @@ const App: React.FC = () => {
 
     try {
       setLoadingMessage('Analyzing your style...');
-      const designReport = await getDesignIdeas(personality, mood, room);
+      const designReport = await getDesignIdeas(personality, mood, room, style, architecturalFeatures, budget);
       
       setLoadingMessage('Rendering your visualization...');
       const imageUrl = await generateImage(designReport.visual_prompt);
@@ -56,7 +61,7 @@ const App: React.FC = () => {
       setLoading(false);
       setLoadingMessage('');
     }
-  }, [personality, mood, room]);
+  }, [personality, mood, room, style, architecturalFeatures, budget]);
 
   const currentColors = moodColors[mood];
 
@@ -157,10 +162,24 @@ const App: React.FC = () => {
 
       <main className="w-full max-w-4xl mx-auto relative z-10">
         <form onSubmit={handleSubmit} className="bg-white/80 backdrop-blur-sm p-6 md:p-8 rounded-xl shadow-md border border-slate-200 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-6">
             <Selector id="personality" label="Your Personality" value={personality} options={personalityOptions} onChange={(value) => setPersonality(value)} />
             <Selector id="mood" label="Desired Mood" value={mood} options={moodOptions} onChange={(value) => setMood(value)} />
             <Selector id="room" label="Room Type" value={room} options={roomOptions} onChange={(value) => setRoom(value)} />
+            <Selector id="style" label="Design Style" value={style} options={styleOptions} onChange={(value) => setStyle(value)} />
+            <Selector id="budget" label="Budget Level" value={budget} options={budgetOptions} onChange={(value) => setBudget(value)} />
+          </div>
+          <div className="mb-8">
+            <label htmlFor="architectural-features" className="block mb-2 text-sm font-medium text-slate-600">Architectural Features & Dimensions (Optional)</label>
+            <textarea
+              id="architectural-features"
+              value={architecturalFeatures}
+              onChange={(e) => setArchitecturalFeatures(e.target.value)}
+              placeholder="e.g., high ceilings, bay windows, 12x15 ft room, open-plan..."
+              className="w-full px-4 py-3 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-200"
+              rows={2}
+              aria-label="Architectural Features and Dimensions"
+            />
           </div>
           <button
             type="submit"
