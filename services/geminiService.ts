@@ -1,6 +1,5 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
-import { Personality, Mood, Room, DesignReport, Style, Budget } from '../types';
+import { BigFiveTraits, Mood, Room, DesignReport, Style, Budget, ArchitecturalBrief } from '../types';
 
 if (!process.env.API_KEY) {
     throw new Error("API_KEY environment variable not set");
@@ -76,8 +75,55 @@ const designSchema = {
     required: ["insight_report", "emotional_story", "visual_prompt", "implementation_steps", "estimated_budget"]
 };
 
+const architecturalSchema = {
+    type: Type.OBJECT,
+    properties: {
+        conceptual_headline: {
+            type: Type.STRING,
+            description: "A compelling headline for the architectural concept, e.g., 'The House of Serenity: A Hurricane-Resistant Coastal Retreat'."
+        },
+        emotion_deconstruction: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING },
+            description: "A list of the core architectural principles derived from the specified emotion."
+        },
+        regional_hazards: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING },
+            description: "A list of the top 3-4 climate and disaster risks for the specified location."
+        },
+        design_synthesis_statement: {
+            type: Type.STRING,
+            description: "A critical paragraph explaining how the design concept deeply integrates the emotional brief with the resilience requirements."
+        },
+        key_features: {
+            type: Type.ARRAY,
+            items: {
+                type: Type.OBJECT,
+                properties: {
+                    feature_name: { type: Type.STRING },
+                    emotional_rationale: { type: Type.STRING, description: "How the feature contributes to the emotional atmosphere." },
+                    resilience_rationale: { type: Type.STRING, description: "How the feature provides specific climate/disaster resilience." },
+                    dual_purpose_synthesis: { type: Type.STRING, description: "A concise explanation of how this feature serves both emotional and resilient goals simultaneously." }
+                },
+                required: ["feature_name", "emotional_rationale", "resilience_rationale", "dual_purpose_synthesis"]
+            },
+            description: "A list of specific design elements, materials, and systems."
+        },
+        visual_prompt: {
+            type: Type.STRING,
+            description: "A single, cinematic paragraph rich in visual detail for an AI image generator. It should describe a photorealistic, 3D render of the building's exterior, mentioning materials, form, landscape, lighting, and the overall mood. This will be used to generate the main visualization."
+        },
+        floor_plan_prompt: {
+            type: Type.STRING,
+            description: "A detailed prompt for an AI image generator to create a 2D floor plan. Describe it as a clean, black and white architectural blueprint or schematic. Specify the layout of rooms, their connections, key resilient features' placement (e.g., thick walls, water collection), and how the layout embodies the core emotion (e.g., open-plan for Joy, secluded nooks for Serenity). Label key areas."
+        }
+    },
+    required: ["conceptual_headline", "emotion_deconstruction", "regional_hazards", "design_synthesis_statement", "key_features", "visual_prompt", "floor_plan_prompt"]
+};
 
-export async function getDesignIdeas(personality: Personality, mood: Mood, room: Room, style: Style, architecturalFeatures: string, budget: Budget): Promise<DesignReport> {
+
+export async function getDesignIdeas(bigFive: BigFiveTraits, mood: Mood, room: Room, style: Style, architecturalFeatures: string, budget: Budget): Promise<DesignReport> {
     const styleInstruction = stylePrompts[style] || stylePrompts.Modern;
     
     const featuresInstruction = architecturalFeatures.trim()
@@ -87,70 +133,137 @@ Architectural Features / Dimensions to Incorporate:
 Critically, these user-provided features must be central to your design recommendations, especially within the 'visual_prompt'.
 `
         : '';
+    
+    const bigFiveInstruction = `
+The user's personality is defined by the "Big Five" model. Interpret these scores (0-100 scale) to create a deeply personalized space:
+- **Openness: ${bigFive.openness}**. High scores mean imaginative, curious, and novelty-seeking. Design for them with unique art, unconventional layouts, and flexible spaces for creative pursuits. Low scores mean practical and conventional. Design for them with classic furniture, familiar layouts, and straightforward functionality.
+- **Conscientiousness: ${bigFive.conscientiousness}**. High scores mean organized, disciplined, and efficient. Design with ample smart storage, minimalist aesthetics, clear zones for activities, and high-quality, durable materials. Low scores mean spontaneous and flexible. Design with multi-purpose furniture, relaxed arrangements, and a more eclectic, less rigid feel.
+- **Extraversion: ${bigFive.extraversion}**. High scores mean outgoing, sociable, and energetic. Design with open layouts, ample seating for guests, vibrant colors, and conversation-starting decor. Low scores mean reserved and solitary. Design with cozy nooks, sound-dampening materials, calming color palettes, and private, restorative spaces.
+- **Agreeableness: ${bigFive.agreeableness}**. High scores mean friendly, compassionate, and cooperative. Design with soft textures, rounded furniture, warm lighting, and a harmonious, welcoming atmosphere. Low scores mean analytical and independent. Design with functional, utilitarian elements, and a more individualistic style that may prioritize function over overt comfort for others.
+- **Neuroticism: ${bigFive.neuroticism}**. High scores mean a tendency toward stress and anxiety. Design a serene sanctuary that is clutter-free, highly organized, and predictable. Use soothing, natural colors (blues, greens, earth tones), soft, diffused lighting, and comfortable, secure furniture. Low scores mean calm and resilient. They can handle more visual complexity, bolder colors, and more stimulating environments.
+
+Use this deep psychological profile as the primary driver for all design choices. The "insight_report" and "emotional_story" must explicitly connect your recommendations back to these specific personality traits.
+`;
+
+    const systemInstruction = `
+You are "EmotiSpace," an expert AI interior designer with a deep understanding of design psychology. Your task is to generate a comprehensive, personalized room design report based on the user's personality, desired mood, and room specifications.
+
+You must adhere to the following rules:
+1.  **Analyze the Big Five scores deeply**: The personality profile is the most critical input. Your entire design concept must be justified based on these traits.
+2.  **Integrate all inputs**: Seamlessly blend the personality insights with the desired mood, room type, budget, chosen style, and any specific architectural features.
+3.  **Be Actionable and Inspiring**: Provide practical, step-by-step guidance while also creating an inspiring emotional narrative.
+4.  **Create a Vivid Visual Prompt**: The 'visual_prompt' must be a single, detailed paragraph suitable for a text-to-image AI, describing a photorealistic 3D render. It should be rich with sensory details (lighting, materials, textures, colors, specific furniture) to generate a beautiful and accurate image. Do not use bullet points or lists in the visual prompt.
+5.  **Strictly follow the JSON schema**: Your entire output must be a single JSON object that validates against the provided schema.
+`;
 
     const prompt = `
-You are "EmotiSpace: Professional Interior Design & Wellbeing Engine". Your task is to generate a full, actionable room design analysis based on user input. The output must be a machine-readable JSON payload that strictly follows the provided schema.
-
-User Input:
-- personality: ${personality}
-- emotional_goal: ${mood}
-- room_type: ${room}
-- design_style: ${style}
-- budget_level: ${budget}
+Generate a design report based on the following user inputs:
+- Room: ${room}
+- Desired Mood: ${mood}
+- Budget: ${budget}
+- Design Style: ${style}
 ${featuresInstruction}
-
-Style Guidelines:
+- Personality Profile (Big Five):
+${bigFiveInstruction}
+- Style Guidance:
 ${styleInstruction}
 
-JSON Output Instructions:
-Produce a JSON object with the exact keys described in the schema. Ensure your recommendations in all sections strongly reflect the user's input and the specified design style. If architectural features are provided, they MUST be incorporated. All furniture, material, and decor suggestions must align with the user's specified **budget_level (${budget})**.
-
-1.  **insight_report**: A professional, executive-style report.
-    -   **headline**: A compelling title summarizing the design strategy, incorporating the chosen style.
-    -   **analysis**: 3-4 bullet points, where each point is a personalized design strategy that reflects their personality, addresses their emotional goals, and adheres to the ${style} design principles, while being mindful of the budget.
-
-2.  **emotional_story**: This is the **user-friendly summary**. Write a short, vivid, and sensory paragraph describing the room's atmosphere, textures, light, and emotional effect. Immerse the user in the feeling of the space, making sure to weave in elements of the ${style} style that are appropriate for the budget.
-
-3.  **visual_prompt**: This is the **detailed image prompt** for an AI image generator. Create a single, cinematic, and technically rich paragraph for a photorealistic, high-resolution interior design photograph (16:9 aspect ratio). This prompt is critical and MUST be highly detailed, specifying materials (e.g., "matte oak," "boucle fabric"), lighting (e.g., "soft morning light from a large window"), key furniture, decor, color palette, and camera angle for an accurate visualization. The visual prompt must strictly adhere to the ${style} aesthetic, be realistic for the specified **budget_level (${budget})**, and **MUST incorporate the user's specified architectural features if provided**.
-
-4.  **implementation_steps**: A practical checklist of 3-6 actionable steps. For each step, include the task, an effort level ('Low', 'Medium', 'High'), and an estimated time in days. The steps should be practical for achieving the ${style} design within the user's budget.
-
-5.  **estimated_budget**: Based on all your recommendations, provide a friendly string with an estimated cost range for completing the project (e.g., '$1,500 - $3,000'). This estimate must be realistic for the specified **budget_level (${budget})**.
-    `;
+Now, generate the complete design report in the specified JSON format.
+`;
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: "gemini-2.5-flash",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
                 responseSchema: designSchema,
-            }
-        });
-        const parsedResponse = JSON.parse(response.text);
-        return parsedResponse as DesignReport;
-    } catch (error) {
-        console.error("Error calling Gemini API for design ideas:", error);
-        throw new Error("Failed to generate design ideas. Please try again later.");
-    }
-}
-
-export async function generateImage(prompt: string): Promise<string> {
-    try {
-        const response = await ai.models.generateImages({
-            model: 'imagen-4.0-generate-001',
-            prompt: prompt,
-            config: {
-                numberOfImages: 1,
-                outputMimeType: 'image/png',
-                aspectRatio: '16:9',
             },
         });
 
-        const base64ImageBytes: string = response.generatedImages[0].image.imageBytes;
-        return `data:image/png;base64,${base64ImageBytes}`;
+        const jsonStr = response.text.trim();
+        const designReport = JSON.parse(jsonStr) as DesignReport;
+        return designReport;
+
     } catch (error) {
-        console.error("Error calling Imagen API:", error);
-        throw new Error("Failed to generate the room image. Please try again later.");
+        console.error("Error generating design ideas:", error);
+        throw new Error("Failed to generate design ideas from the AI. Please check the console for more details.");
+    }
+}
+
+
+export async function getArchitecturalConcept(emotion: string, location: string): Promise<ArchitecturalBrief> {
+    const systemInstruction = `You are EmotiSpace, an advanced AI architectural designer. Your specialty is Resilient Emotional Architecture. Your primary goal is to take a core human emotion as input and generate a concept for a residential structure that both embodies the essence of that emotion and is engineered to be highly resilient against adverse climate change effects and specific natural disasters. The design must be a true synthesis, where the emotional and practical elements are deeply integrated, not just co-located. The output should be a conceptual brief for a single-family dwelling.
+
+[Core Task & Steps]
+
+1.  **Analyze the Input**: You will receive a core Emotion and a Location.
+
+2.  **Deconstruct the Emotion**: Identify the core architectural principles associated with the emotion.
+    Example for "Serenity": Enclosure, simplicity, natural light, connection to nature, muted soundscape, minimalism.
+
+3.  **Identify Regional Hazards**: Based on the location, identify the top 3-4 climate and disaster risks.
+    Example for Coastal Florida: Hurricanes (high winds, storm surge), extreme heat/humidity, flooding from sea-level rise.
+    Example for Hyderabad, India: Extreme heatwaves, urban flooding during monsoon, water scarcity.
+
+4.  **Synthesize & Design**: This is the critical step. Create a design concept where architectural features serve a dual purpose, fulfilling both the emotional brief and the resilience requirements. Explain this synthesis clearly in the 'design_synthesis_statement'.
+
+5.  **Specify Key Features**: Detail the specific design elements, materials, and systems that achieve this synthesis. For each feature, explain its dual rationale.
+
+6.  **Create Visual Prompts**:
+    -   **Exterior Prompt ('visual_prompt')**: Create a cinematic, photorealistic prompt for the building's exterior.
+    -   **Floor Plan Prompt ('floor_plan_prompt')**: Create a detailed prompt for a 2D black-and-white architectural floor plan. This prompt must describe room layouts, connections, and how they reflect both the emotion and resilience strategies.
+
+7.  **Strictly follow the JSON schema**: Your entire output must be a single JSON object that validates against the provided schema. No trade-offs are allowed; resilience features must enhance the emotional aesthetic. Prioritize sustainable, eco-friendly materials and systems.`;
+
+    const prompt = `
+Generate an architectural concept brief based on the following inputs:
+-   Core Emotion: ${emotion}
+-   Location: ${location}
+
+Now, generate the complete architectural brief in the specified JSON format.
+`;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: architecturalSchema,
+            },
+        });
+        
+        const jsonStr = response.text.trim();
+        const brief = JSON.parse(jsonStr) as ArchitecturalBrief;
+        return brief;
+
+    } catch (error) {
+        console.error("Error generating architectural concept:", error);
+        throw new Error("Failed to generate architectural concept from the AI.");
+    }
+}
+
+export async function generateImage(prompt: string, aspectRatio: '16:9' | '1:1' = '16:9'): Promise<string> {
+    try {
+        const response = await ai.models.generateImages({
+            model: 'imagen-4.0-generate-001',
+            prompt: `${prompt}, cinematic, architectural photography, hyper-detailed, 8k`,
+            config: {
+              numberOfImages: 1,
+              outputMimeType: 'image/png',
+              aspectRatio: aspectRatio,
+            },
+        });
+        
+        if (response.generatedImages && response.generatedImages.length > 0) {
+            const base64ImageBytes = response.generatedImages[0].image.imageBytes;
+            return `data:image/png;base64,${base64ImageBytes}`;
+        } else {
+            throw new Error("No image was generated.");
+        }
+    } catch (error) {
+        console.error("Error generating image:", error);
+        throw new Error("Failed to generate image from the AI.");
     }
 }
